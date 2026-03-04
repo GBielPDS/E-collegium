@@ -42,8 +42,13 @@ async function buscarAlunos() {
                 <td>${aluno.nota4}</td>
                 <td>${aluno.nota_final}</td>
                 <td>
-                    <button onclick="editarAluno(${aluno.id}, event)">Editar</button>
-                    <button onclick="excluirAluno(${aluno.id})" class="btn-excluir">Excluir</button>
+                    <button class="btn btn-warning btn-sm me-2" onclick="editarAluno(${aluno.id}, event)">
+                        Editar
+                    </button>
+
+                    <button class="btn btn-danger btn-sm" onclick="excluirAluno(${aluno.id})">
+                        Excluir
+                    </button>
                 </td>
             </tr>
         `;

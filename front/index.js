@@ -30,31 +30,54 @@ async function buscarTurmas() {
 
     turmas.forEach(turma => {
         const row = `
-            <tr onclick="irParaAlunos(${turma.id})" class="linha-turma">
+            <tr class="linha-turma" data-id="${turma.id}">
                 <td>${turma.id}</td>
                 <td>${turma.nome}</td>
                 <td>${turma.escola}</td>
                 <td>${turma.nota_aprovacao}</td>
                 <td>${turma.nota_recuperacao}</td>
                 <td>${turma.nota_reprovacao}</td>
+
                 <td>
-                    <button onclick="editarTurma(${turma.id})">Editar</button>
-                    <button onclick="excluirTurma(${turma.id})" class="btn-excluir">Excluir</button>
+                    <button class="btn btn-warning btn-sm me-2"
+                        onclick="editarTurma(${turma.id}, event)">
+                        Editar
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                    onclick="excluirTurma(${turma.id})">
+                    Excluir
+                </button>
                 </td>
             </tr>
         `;
         tbody.innerHTML += row;
     });
+    document.querySelectorAll(".linha-turma").forEach(linha => {
+
+        linha.addEventListener("click", function (e) {
+
+            if (e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") {
+                return;
+            }
+
+            const turmaId = this.getAttribute("data-id");
+            irParaAlunos(turmaId);
+        });
+
+    });
 }
 
 //########  EDITAR  ########
-async function editarTurma(id) {
+async function editarTurma(id, event) {
+
+    event.stopPropagation();
 
     const linha = event.target.closest("tr");
     const botao = event.target;
 
     // Se já estiver em modo salvar
-    if (botao.textContent === "Salvar") {
+    if (botao.textContent.trim() === "Salvar") {
 
         const inputs = linha.querySelectorAll("input");
 
@@ -75,7 +98,7 @@ async function editarTurma(id) {
         });
 
         if (response.ok) {
-            buscarTurmas(); // recarrega tabela
+            buscarTurmas();
         } else {
             alert("Erro ao salvar.");
         }
@@ -83,13 +106,16 @@ async function editarTurma(id) {
         return;
     }
 
-    // ########### //
-
     const colunas = linha.querySelectorAll("td");
 
     for (let i = 1; i <= 5; i++) {
-        const valor = colunas[i].textContent;
-        colunas[i].innerHTML = `<input type="text" value="${valor}">`;
+        const valor = colunas[i].innerText.trim();
+
+        colunas[i].innerHTML = `
+            <input type="text"
+                   class="form-control form-control-sm"
+                   value="${valor}">
+        `;
     }
 
     botao.textContent = "Salvar";
@@ -130,14 +156,21 @@ async function adicionarTurma() {
 
     novaLinha.innerHTML = `
         <td></td>
-        <td><input type="text" placeholder="Nome"></td>
-        <td><input type="text" placeholder="Escola"></td>
-        <td><input type="number" step="0.1" placeholder="Nota aprovação"></td>
-        <td><input type="number" step="0.1" placeholder="Nota recuperação"></td>
-        <td><input type="number" step="0.1" placeholder="Nota reprovação"></td>
+        <td><input type="text" class="form-control form-control-sm" placeholder="Nome"></td>
+        <td><input type="text" class="form-control form-control-sm" placeholder="Escola"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" placeholder="Nota aprovação"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" placeholder="Nota recuperação"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" placeholder="Nota reprovação"></td>
         <td>
-            <button onclick="salvarNovaTurma(this)">Salvar</button>
-            <button onclick="this.closest('tr').remove()">Cancelar</button>
+            <button class="btn btn-success btn-sm me-2"
+                onclick="event.stopPropagation(); salvarNovaTurma(this)">
+                Salvar
+            </button>
+
+            <button class="btn btn-secondary btn-sm"
+                onclick="event.stopPropagation(); this.closest('tr').remove()">
+                Cancelar
+            </button>
         </td>
     `;
 
