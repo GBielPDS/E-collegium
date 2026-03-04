@@ -125,6 +125,21 @@ def update_turma(id):
 
     return jsonify({"message": "Turma atualizada!"})
 
+@app.route("/turmas/<int:id>", methods=["DELETE"])
+def delete_turma(id):
+    s = Session()
+    turma = s.get(Turma, id)
+
+    if not turma:
+        return jsonify({"error": "Turma não encontrada"}), 404
+    
+    s.query(Aluno).filter_by(turma_id=id).delete()
+    
+    s.delete(turma)
+    s.commit()
+
+    return jsonify({"message": "Turma excluída"})
+
 @app.route("/turmas/<int:turma_id>/alunos", methods=["GET"])
 def get_all_aluno_turma(turma_id):
     s = Session()
@@ -230,6 +245,19 @@ def update_aluno(id):
     s.commit()
 
     return jsonify({"message": "Aluno atualizado!"})
+
+@app.route("/alunos/<int:id>", methods=["DELETE"])
+def delete_aluno(id):
+    s = Session()
+    aluno = s.get(Aluno, id)
+
+    if not aluno:
+        return jsonify({"error": "Aluno não encontrado"}), 404
+
+    s.delete(aluno)
+    s.commit()
+
+    return jsonify({"message": "Aluno excluído"})
 
 
 if __name__ == "__main__":
