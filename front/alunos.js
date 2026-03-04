@@ -29,6 +29,11 @@ async function buscarAlunos() {
     const alunos = await response.json();
 
     const tbody = document.querySelector("#tabelaAlunos tbody");
+
+        if (!tbody) {
+            console.error("Tabela não encontrada!");
+            return;
+        }
     tbody.innerHTML = "";
 
     alunos.forEach(aluno => {
@@ -87,7 +92,11 @@ async function editarAluno(id, event) {
 
     for (let i = 1; i <= 5; i++) {
         const valor = colunas[i].textContent;
-        colunas[i].innerHTML = `<input type="text" value="${valor}">`;
+        colunas[i].innerHTML = `
+            <input type="text"
+                class="form-control form-control-sm"
+                value="${valor.trim()}">
+        `;
     }
 
     botao.textContent = "Salvar";
@@ -114,15 +123,22 @@ function adicionarAluno() {
 
     novaLinha.innerHTML = `
         <td></td>
-        <td><input type="text" placeholder="Nome"></td>
-        <td><input type="number" step="0.1" value="0"></td>
-        <td><input type="number" step="0.1" value="0"></td>
-        <td><input type="number" step="0.1" value="0"></td>
-        <td><input type="number" step="0.1" value="0"></td>
-        <td><input type="number" step="0.1" value="0"></td>
+        <td><input type="text" class="form-control form-control-sm" placeholder="Nome"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" value="0"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" value="0"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" value="0"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" value="0"></td>
+        <td><input type="number" step="0.1" class="form-control form-control-sm" value="0"></td>
         <td>
-            <button onclick="salvarNovoAluno(this)">Salvar</button>
-            <button onclick="this.closest('tr').remove()">Cancelar</button>
+            <button class="btn btn-success btn-sm me-2"
+                onclick="salvarNovoAluno(this)">
+                Salvar
+            </button>
+
+            <button class="btn btn-secondary btn-sm"
+                onclick="this.closest('tr').remove()">
+                Cancelar
+            </button>
         </td>
     `;
 
