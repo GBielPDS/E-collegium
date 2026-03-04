@@ -3,6 +3,8 @@ from flask_cors import CORS # Importa CORS para permitir requisições de outros
 from sqlalchemy import create_engine # Importa função para criar o engine do banco
 from sqlalchemy.orm import sessionmaker # Importa sessionmaker para criar sessões de interação com o banco
 from models import Base, Usuario, Turma, Aluno # Importa a Base e o modelo Usuario definidos no arquivo models.py
+from sqlalchemy.exc import IntegrityError
+
 
 app = Flask(__name__) # Cria a aplicação Flask
 CORS(app) # Ativa o CORS na aplicação (permite conexões externas)
@@ -14,7 +16,7 @@ Session = sessionmaker(bind=engine) # Cria uma classe Session para abrir sessõe
 def add_usuario():
  s = Session() # Abre uma sessão com o banco
  data = request.json # Pega o JSON enviado no corpo da requisição
- u = Usuario(nome=data["nome"], email=data["email"]) # Cria um objeto Usuario com os dados recebidos
+ u = Usuario(nome=data["nome"], email=data["email"], senha=data["senha"]) # Cria um objeto Usuario com os dados recebidos
  s.add(u) # Adiciona o usuário à sessão
  s.commit() # Confirma e grava no banco
  return jsonify({"message": "Usuário criado!"}) # Retorna uma resposta JSON
@@ -48,6 +50,7 @@ def update_usuario(id):
 
     usuario.nome = data.get("nome", usuario.nome)
     usuario.email = data.get("email", usuario.email)
+    usuario.senha = data.get("senha", usuario.senha)
 
     s.commit()
 
@@ -70,6 +73,64 @@ def get_all_turmas_professor(id):
         }
         for t in turmas
     ])
+
+#########   Turma   #########
+
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    s = Session()
+    data = request.get_json()
+
+    nome = data.get("nome")
+    email = data.get("email")
+    senha = data.get("senha")
+
+    if not nome or not email or not senha:
+        return jsonify({"error": "Preencha todos os campos"}), 400
+
+    novo_usuario = Usuario(
+        nome=nome,
+        email=email,
+        senha=senha 
+    )
+
+    try:
+        s.add(novo_usuario)
+        s.commit()
+    except IntegrityError:
+        s.rollback()
+        return jsonify({"error": "Email já cadastrado"}), 400
+
+    return jsonify({
+        "message": "Usuário cadastrado com sucesso!",
+        "id": novo_usuario.id,
+        "nome": novo_usuario.nome
+    }), 201
+
+@app.route("/login", methods=["POST"])
+def login():
+    s = Session()
+    data = request.get_json()
+
+    email = data.get("email")
+    senha = data.get("senha")
+
+    if not email or not senha:
+        return jsonify({"error": "Email e senha obrigatórios"}), 400
+
+    usuario = s.query(Usuario).filter_by(email=email).first()
+
+    if not usuario or usuario.senha != senha:
+        return jsonify({"error": "Credenciais inválidas"}), 401
+
+    return jsonify({
+        "message": "Login realizado com sucesso",
+        "id": usuario.id,
+        "nome": usuario.nome,
+        "email": usuario.email
+    })
 
 #########   Turma   #########
 

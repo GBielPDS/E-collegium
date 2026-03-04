@@ -8,6 +8,7 @@ class Usuario(Base):
     id = Column(Integer, primary_key=True)
     nome = Column(String)
     email = Column(String, unique=True)
+    senha = Column(String)
     
     turma = relationship("Turma", back_populates="professor")
 

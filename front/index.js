@@ -1,5 +1,15 @@
+document.addEventListener("DOMContentLoaded", () => {
+    buscarTurmas();
+});
+
 async function buscarTurmas() {
-    const professorId = document.getElementById("professorId").value;
+    const professorId = localStorage.getItem("usuario_id");
+
+    if (!professorId) {
+        alert("Usuário não logado!");
+        window.location.href = "login.html";
+        return;
+    }
 
     if (!professorId) {
         alert("Digite um ID válido!");
@@ -139,7 +149,7 @@ async function salvarNovaTurma(botao) {
     const linha = botao.closest("tr");
     const inputs = linha.querySelectorAll("input");
 
-    const professorId = document.getElementById("professorId").value;
+    const professorId = localStorage.getItem("usuario_id");
 
     const nome = inputs[0].value;
     const escola = inputs[1].value;

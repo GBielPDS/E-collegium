@@ -1,5 +1,17 @@
+const usuarioId = localStorage.getItem("usuario_id");
+
+if (!usuarioId) {
+    alert("Usuário não logado!");
+    window.location.href = "login.html";
+}
+
 const urlParams = new URLSearchParams(window.location.search);
 const turmaId = urlParams.get("turma");
+
+if (!turmaId) {
+    alert("Turma inválida!");
+    window.location.href = "index.html";
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     buscarAlunos();
