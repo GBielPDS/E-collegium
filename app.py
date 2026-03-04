@@ -53,6 +53,24 @@ def update_usuario(id):
 
     return jsonify({"message": "Usuário atualizado!"})
 
+@app.route("/usuarios/<int:id>/turmas", methods=["GET"])
+def get_all_turmas_professor(id):
+    s = Session()
+    turmas = s.query(Turma).filter_by(professor_id=id).all()
+
+    return jsonify([
+        {
+            "id": t.id,
+            "professor_id": t.professor_id,
+            "nome": t.nome,
+            "escola": t.escola,
+            "nota_aprovacao": t.nota_aprovacao,
+            "nota_recuperacao": t.nota_recuperacao,
+            "nota_reprovacao": t.nota_reprovacao
+        }
+        for t in turmas
+    ])
+
 #########   Turma   #########
 
 @app.route("/turmas", methods=["POST"])
@@ -107,6 +125,28 @@ def update_turma(id):
 
     return jsonify({"message": "Turma atualizada!"})
 
+@app.route("/turmas/<int:turma_id>/alunos", methods=["GET"])
+def get_all_aluno_turma(turma_id):
+    s = Session()
+    alunos = s.query(Aluno).filter_by(turma_id=turma_id).all()
+
+    if not alunos:
+        return jsonify({"error": "Nenhum aluno encontrado"}), 404
+
+    return jsonify([
+        {
+            "id": a.id,
+            "turma_id": a.turma_id,
+            "nome": a.nome,
+            "nota1": a.nota1,
+            "nota2": a.nota2,
+            "nota3": a.nota3,
+            "nota4": a.nota4,
+            "nota_final": a.nota_final
+        }
+        for a in alunos
+    ])
+
 
 
 #########   Aluno   #########
@@ -115,14 +155,6 @@ def update_turma(id):
 def add_aluno():
     s = Session()
     data = request.get_json()
-
-    nota_final = (
-        data["nota1"] +
-        data["nota2"] +
-        data["nota3"] +
-        data["nota4"]
-    ) / 4
-
     aluno = Aluno(
         turma_id=data["turma_id"],
         nome=data["nome"],
@@ -130,7 +162,7 @@ def add_aluno():
         nota2=data["nota2"],
         nota3=data["nota3"],
         nota4=data["nota4"],
-        nota_final=nota_final
+        nota_final=data["nota_final"]
     )
 
     s.add(aluno)
@@ -157,43 +189,25 @@ def get_alunos():
         for a in alunos
     ])
 
-# @app.route("/alunos/<int:id>", methods=["GET"])
-# def get_unique_aluno(id):
-#     s = Session()
-#     alunos = s.query(Aluno).get(id)
+@app.route("/alunos/<int:id>", methods=["GET"])
+def get_unique_aluno(id):
+    s = Session()
+    aluno = s.get(Aluno, id)
 
-#     return jsonify([
-#         {
-#             "id": a.id,
-#             "turma_id": a.turma_id,
-#             "nome": a.nome,
-#             "nota1": a.nota1,
-#             "nota2": a.nota2,
-#             "nota3": a.nota3,
-#             "nota4": a.nota4,
-#             "nota_final": a.nota_final
-#         }
-#         for a in alunos
-#     ])
+    if not aluno:
+        return jsonify({"error": "Aluno não encontrado"}), 404
 
-# @app.route("/alunos/<int:turma_id>", methods=["GET"])
-# def get_all_aluno_turma(turma_id):
-#     s = Session()
-#     alunos = s.query(Usuario).get(turma_id)
+    return jsonify({
+        "id": aluno.id,
+        "turma_id": aluno.turma_id,
+        "nome": aluno.nome,
+        "nota1": aluno.nota1,
+        "nota2": aluno.nota2,
+        "nota3": aluno.nota3,
+        "nota4": aluno.nota4,
+        "nota_final": aluno.nota_final
+    })
 
-#     return jsonify([
-#         {
-#             "id": a.id,
-#             "turma_id": a.turma_id,
-#             "nome": a.nome,
-#             "nota1": a.nota1,
-#             "nota2": a.nota2,
-#             "nota3": a.nota3,
-#             "nota4": a.nota4,
-#             "nota_final": a.nota_final
-#         }
-#         for a in alunos
-#     ])
 
 @app.route("/alunos/<int:id>", methods=["PUT"])
 def update_aluno(id):
@@ -211,12 +225,7 @@ def update_aluno(id):
     aluno.nota3 = data.get("nota3", aluno.nota3)
     aluno.nota4 = data.get("nota4", aluno.nota4)
 
-    aluno.nota_final = (
-        aluno.nota1 +
-        aluno.nota2 +
-        aluno.nota3 +
-        aluno.nota4
-    ) / 4
+    aluno.nota_final = data.get("nota_final", aluno.nota_final)
 
     s.commit()
 
